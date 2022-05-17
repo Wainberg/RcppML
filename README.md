@@ -17,7 +17,7 @@ devtools::install_github("zdebruine/RcppML")     # dev version
 
 Once installed and loaded, RcppML C++ headers defining classes can be used in C++ files for any R package using `#include <RcppML.hpp>`.
 
-To use the C++ library, clone the repo and `#include <RcppML.hpp>`. You will also need to clone `RcppEigen`.
+To use the C++ library, clone the repo and `#include <RcppML.hpp>` (which includes `RcppEigen.h`).
 
 ## Why NMF
 * Useful for dimensional reduction, sparse signature recovery, prediction, transfer learning, dataset integration, and more
@@ -53,26 +53,9 @@ I am in the process of writing vignettes for as many topics as possible, with ac
 ## References
 [bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF of single-cell transcriptomics data.
 
-### Code example
-
-Example using R:
-
-```
-library(RcppML)
-data(hibirds)                 # load a dataset of hawaii bird frequency
-                              #   in 10km^2 survey grids
-set.seed(123)                 # make random initialization reproducible
-m <- nmf(hibirds$data)
-m$L1(0.01)                    # L1 makes for a little more sparsity
-m$auto_fit(10)                # automatically find the best rank and fit the model, 
-                              #   starting with k = 10
-model <- m$get_model()        # get the final model at the best rank
-cv_plot(m)                    # plot the cross-validation results
-```
-
 ### Quick Start
 
-The `nmf` function is a convenience interface to the full R API and captures some of the most popular functionality with reasonable defaults.
+The `nmf` function is a lightweight wrapper around the full R API:
 
 ```
 nmf(A, k = NULL, tol = 1e-4, maxit = 100, verbose = 1, L1 = c(0, 0), ...)
@@ -87,7 +70,7 @@ nmf(A, k = NULL, tol = 1e-4, maxit = 100, verbose = 1, L1 = c(0, 0), ...)
 The R API interfaces with the C++ class and operates in-place by reference.
 
 **Constructor:**
-* `nmf_model(data)` constructs a new object of class `nmf`. The `data` matrix is copied and transposed, and pointers to both version of the matrix are retained in the object. Removing the object from the R environment will invalidate the class.
+* `nmf_sparse(data)`, constructs a new object of class `nmf`. The `data` matrix is copied and transposed, and pointers to both versions of the matrix are retained in the object. Removing the object from the R environment will invalidate the class.
 
 **Parameter Setters:**
 * `$L1(0, 0)` or `$L1(0)` set an L1 penalty in the range `(0, 1]`
@@ -116,6 +99,23 @@ It is helpful to use `$verbose(3)` to gain high-level insights into how these fu
 * `$w()`, `$d()`, `$h()`, `$fit_tol()`, `$fit_iter()` get the `w`, `d`, or `h` components of the model, the fit tolerance, and the number of iterations used to generate the fit.
 * `$fit_info()` get cross-validation results and tolerances for fitting iterations, etc.
 * `$clone()` clone the model to a new model object
+
+### Code example
+
+Example using R:
+
+```
+library(RcppML)
+data(hibirds)                 # load a dataset of hawaii bird frequency
+                              #   in 10km^2 survey grids
+set.seed(123)                 # make random initialization reproducible
+m <- nmf_model(hibirds$data)
+m$L1(0.01)                    # L1 makes for a little more sparsity
+m$auto_fit(k_init = 10)       # automatically find the best rank and fit the model, 
+                              #   starting with k = 10
+model <- m$get()              # get the final model at the best rank
+cv_plot(m)                    # plot the cross-validation results
+```
 
 ### What happens behind the scenes
 
