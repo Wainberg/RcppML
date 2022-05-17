@@ -51,7 +51,7 @@ RcppML NMF fixes both problems.
 I am in the process of writing vignettes for as many topics as possible, with accompanying publications. Please read and cite accordingly.
 
 ## References
-[bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF for single-cell experiments.
+[bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF of single-cell transcriptomics data.
 
 ### Code example
 
@@ -61,11 +61,12 @@ Example using R:
 library(RcppML)
 data(hibirds)                 # load a dataset of hawaii bird frequency
                               #   in 10km^2 survey grids
-m <- NMF(hibirds$counts)
-m$L1(0.01)                    # L1 makes for a little more sparsity
 set.seed(123)                 # make random initialization reproducible
-m$fit(k = 2:20)               # fit models at all ranks between 2 and 20
-m$
+m <- nmf(hibirds$data)
+m$L1(0.01)                    # L1 makes for a little more sparsity
+m$cv() # cross-validate, holding out a 5% dense test set
+m$fit(k = 2:20, nstart = 3)   # fit models at all ranks between 2 and 20 for 3 random initializations
+model <- m$get_best()         # pick the model at the optimal rank
 ```
 
 Example using C++:
@@ -77,73 +78,42 @@ RcppML::nmf m(data);
 m.
 ```
 
+### Full R API
 
+The R API interfaces with the C++ class and operates in-place by reference.
 
-#### R functions
-The `nmf` function runs matrix factorization by alternating least squares in the form `A = WDH`. The `project` function updates `w` or `h` given the other, while the `mse` function calculates mean squared error of the factor model.
+**Constructor:**
+* `nmf(data)` constructs a new object of class `nmf`. The `data` matrix and its transpose is copied to C++ and stored in `float` precision.
 
-```{R}
-A <- Matrix::rsparsematrix(1000, 100, 0.1) # sparse Matrix::dgCMatrix
-model <- RcppML::nmf(A, k = 10, nonneg = TRUE)
-h0 <- RcppML::project(A, w = model$w)
-RcppML::mse(A, model$w, model$d, model$h)
+**Parameter Setters:**
+* `$verbose(1)`, set verbosity level (0-3)
+* `$threads(0)`, number of threads to use, where `0` corresponds to all detectable threads.
+* `$L1(0, 0)` or `$L1(0)`
+* `$L2(0, 0)` or `$L2(0)`
+* `$graph_w(dgCMatrix, numeric)`, `$graph_h(dgCMatrix, numeric)`, a sparse symmetric [adjacency matrix](https://en.wikipedia.org/wiki/Laplacian_matrix) giving non-negative edge weights. The graph Laplacian will be computed from this matrix. The second term gives the penalty weight, where a penalty of `1` indicates equal contribution of the Euclidean and graph objectives to the solution.
+* `$mask(dgCMatrix)`, sparse matrix of same dimensions as `data` giving amount by which each value should be masked during model fitting, where a weight of `1` corresponds to complete masking (handle it as a missing value).
+* `$mask_h(matrix)`, `$mask_w(matrix)`, dense matrix of same dimensions as `h` or `w` giving the amount by which each sample or feature should be associated with each factor (e.g. linking), usually derived from some form of metadata.
+* `$mask_zeros(TRUE)` handle zeros as missing values.
+* `$mask_test_set(inverse_density)` mask a random speckled test set with a specified inverse density (i.e. inverse density of 16 corresponds to 6.25% density)
+* `$precision("double" or "float")` specify precision for model fitting. The matrix is always stored as `double`.
+* `$seed(integer)` or `$seed(matrix)`, specify a seed to initialize `w` or provide an initialization of `w`. By default, the model uses  `abs(.Random.seed[[3]])` from the R global environment at construction.
+
+Any parameter
+
+* `$fit(k<integer>, tolerance<numeric>, max_iter<integer>)`
+
+Construct a new NMF object using your data as either a dense or sparse matrix, and then set any of the following parameters:
+
+The object only stores a single model, but always stores fit information after each update (tolerance, iteration, seed, and test set error).
+
+```
+m <- nmf(data)
 ```
 
-#### C++ class
-The `RcppML::MatrixFactorization` class is an object-oriented interface with methods for fitting, projecting, and evaluating linear factor models. It also contains a sparse matrix class equivalent to `Matrix::dgCMatrix` in R.
+C++ object stores a vector of fit results.
 
-```{Rcpp}
-#include <RcppML.hpp>
+**Parameters**
 
-//[[Rcpp::export]]
-Rcpp::List RunNMF(const Rcpp::S4& A_, int k){
-     RcppML::Matrix A(A_); // zero-copy, unlike arma or Eigen equivalents
-     RcppML::MatrixFactorization model(k, A.rows(), A.cols());
-     model.tol = 1e-5;
-     model.fit(A);
-     return Rcpp::List::create(
-          Rcpp::Named("w") = model.w,
-          Rcpp::Named("d") = model.d,
-          Rcpp::Named("h") = model.h,
-          Rcpp::Named("mse") = model.mse(A));
-}
-```
+**Train**
 
-## Divisive Clustering
-Divisive clustering by rank-2 spectral bipartitioning.
-* 2nd SVD vector is linearly related to the difference between factors in rank-2 matrix factorization.
-* Rank-2 matrix factorization (optional non-negativity constraints) for spectral bipartitioning **~2x faster** than _irlba_ SVD
-* Sensitive distance-based stopping criteria similar to Newman-Girvan modularity, but orders of magnitude faster
-* Stopping criteria based on minimum number of samples
-
-#### R functions
-The `dclust` function runs divisive clustering by recursive spectral bipartitioning, while the `bipartition` function exposes the rank-2 NMF specialization and returns statistics of the bipartition.
-
-```{R}
-A <- Matrix::rsparsematrix(A, 1000, 1000, 0.1) # sparse Matrix::dgcMatrix
-clusters <- dclust(A, min_dist = 0.001, min_samples = 5)
-cluster0 <- bipartition(A)
-```
-
-#### C++ class
-The `RcppML::clusterModel` class provides an interface to divisive clustering. In the future, more clustering algorithms may be added.
-
-```{Rcpp}
-#include <RcppML.hpp>
-
-//[[Rcpp::export]]
-Rcpp::List DivisiveCluster(const Rcpp::S4& A_, int min_samples, double min_dist){
-   RcppML::Matrix A(A_);
-   RcppML::clusterModel model(A, min_samples, min_dist);
-   model.dclust();
-   std::vector<RcppML::cluster> clusters = m.getClusters();
-   Rcpp::List result(clusters.size());
-   for (int i = 0; i < clusters.size(); ++i) {
-        result[i] = Rcpp::List::create(
-             Rcpp::Named("id") = clusters[i].id,
-             Rcpp::Named("samples") = clusters[i].samples,
-             Rcpp::Named("center") = clusters[i].center);
-   }
-   return result;
-}
-```
+**Visualize**
