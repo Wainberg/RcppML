@@ -56,6 +56,8 @@ The `nmf` function is a lightweight wrapper around the full R API:
 nmf(A, k = NULL, tol = 1e-4, maxit = 100, verbose = 1, L1 = c(0, 0), ...)
 ```
 
+Note:  the `...` catches some earlier parameters that are no longer implemented, like `diag`. It also catches `seed` (for backwards compatibility with current CRAN version), and if found will set the R seed.
+
 * If `k` is a single integer, a model will be learned at that rank using all data.
 * If `k` is an integer vector, models will be learned at each rank and the model with the lowest test set reconstruction error will be returned. The test set is a random speckled pattern of values (6.25% dense) that is randomly with-held during model fitting.
 * If `k = NULL`, the rank will be automatically determined using cross-validation.
