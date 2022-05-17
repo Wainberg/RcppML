@@ -20,15 +20,13 @@ Once installed and loaded, RcppML C++ headers defining classes can be used in C+
 To use the C++ library, clone the repo and `#include <RcppML.hpp>`. You will also need to clone `RcppEigen`.
 
 ## Why NMF
-Non-negative Matrix Factorization is arguably the simplest possible dimensional reduction because it finds a number of factors that collectively add to approximate the original data. 
-
-Non-negativity constraints force imputation of signal dropout (sparsity) and generate a model that is easy to reason about.
-
-NMF is very flexible -- it can incorporate prior knowledge in the form of a graph describing feature or sample similarities, or a matrix giving weights for each data point, or a matrix of the same dimensions as `w` or `h` that couples factors to other information.
-
-NMF is useful for dimensional reduction, sparse signature recovery, prediction, transfer learning, integration, and more.
-
-Unlike PCA, NMF does not require data centering and scaling, and generally does best when considering all data, not just variable features.
+* Useful for dimensional reduction, sparse signature recovery, prediction, transfer learning, dataset integration, and more
+* Arguably the simplest possible dimensional reduction because it finds some number of factors that add to reconstruct the input as well as possible. 
+* Generates models that are easy to reason about
+* Accurately imputes signal dropout (sparsity)
+* Prior knowledge can be incorporated as a graph describing feature or sample similarities, or a matrix giving weights for each data point, or a matrix of the same dimensions as `w` or `h` that couples factors to other information
+* No need to scale and center, and use all data, not just variable features
+* Easy to determine the best rank using cross-validation
 
 ## Why not NMF
 * Too slow
@@ -50,7 +48,7 @@ RcppML NMF fixes both problems.
 * Diagonal scaling based on the L1 norm of `W` and `H`
 * Built-in new xorshift+xoroshiro RNG for transpose-identical matrix generation (useful in masking during cross-validation)
 
-I am in the process of writing vignettes for everything, with accompanying publications. Please read and cite accordingly.
+I am in the process of writing vignettes for as many topics as possible, with accompanying publications. Please read and cite accordingly.
 
 ## References
 [bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF for single-cell experiments.
