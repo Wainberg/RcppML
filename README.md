@@ -64,26 +64,31 @@ data(hibirds)                 # load a dataset of hawaii bird frequency
 set.seed(123)                 # make random initialization reproducible
 m <- nmf(hibirds$data)
 m$L1(0.01)                    # L1 makes for a little more sparsity
-m$cv() # cross-validate, holding out a 5% dense test set
-m$fit(k = 2:20, nstart = 3)   # fit models at all ranks between 2 and 20 for 3 random initializations
-model <- m$get_best()         # pick the model at the optimal rank
+m$auto_fit(10)                # automatically find the best rank and fit the model, 
+                              #   starting with k = 10
+model <- m$get_model()        # get the final model at the best rank
+cv_plot(m)                    # plot the cross-validation results
 ```
 
-Example using C++:
+### Quick Start
+
+The `nmf` function is a convenience interface to the full R API and captures some of the most popular functionality with reasonable defaults.
 
 ```
-#include <RcppML.hpp>          // also includes Eigen
-Eigen::MatrixXd data = Eigen::MatrixXd::Random(1000, 1000);
-RcppML::nmf m(data);
-m.
+set.seed(123)
+nmf(data, k = NULL, tol = 1e-4, L1 = 0)
 ```
+
+* If `k` is a single integer, a model will be learned at that rank using all data.
+* If `k` is an integer vector, models will be learned at each rank and the model with the lowest test set reconstruction error will be returned. The test set is a random speckled pattern of values (6.25% dense) that is randomly with-held during model fitting.
+* If `k = NULL`, the rank will be automatically determined using cross-validation.
 
 ### Full R API
 
 The R API interfaces with the C++ class and operates in-place by reference.
 
 **Constructor:**
-* `nmf(data)` constructs a new object of class `nmf`. The `data` matrix and its transpose is copied to C++ and stored in `float` precision.
+* `nmf_model(data)` constructs a new object of class `nmf`. The `data` matrix and its transpose is copied to C++ and stored in `float` precision.
 
 **Parameter Setters:**
 * `$L1(0, 0)` or `$L1(0)` set an L1 penalty in the range `(0, 1]`
