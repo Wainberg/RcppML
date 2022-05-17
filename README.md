@@ -48,12 +48,7 @@ RcppML NMF fixes both problems.
 * Diagonal scaling based on the L1 norm of `W` and `H`
 * Built-in new xorshift+xoroshiro RNG for transpose-identical matrix generation (useful in masking during cross-validation)
 
-I am in the process of writing vignettes for as many topics as possible, with accompanying publications. Please read and cite accordingly.
-
-## References
-[bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF of single-cell transcriptomics data.
-
-### Quick Start
+## Quick Start
 
 The `nmf` function is a lightweight wrapper around the full R API:
 
@@ -65,7 +60,7 @@ nmf(A, k = NULL, tol = 1e-4, maxit = 100, verbose = 1, L1 = c(0, 0), ...)
 * If `k` is an integer vector, models will be learned at each rank and the model with the lowest test set reconstruction error will be returned. The test set is a random speckled pattern of values (6.25% dense) that is randomly with-held during model fitting.
 * If `k = NULL`, the rank will be automatically determined using cross-validation.
 
-### Full R API
+## Full R API
 
 The R API interfaces with the C++ class and operates in-place by reference.
 
@@ -123,3 +118,8 @@ The model will initially fit using float precision, but will be automatically up
 
 If a random test set is masked, the error will be computed after 5 priming iterations. If the error ever surpasses the error after 5 iterations, the factorization is aborted due to overfitting.
 
+### Vignettes
+* The `RcppML::NMF` class: fast and flexible NMF
+* The `RcppML::SparseMatrix` class:  zero-copy const reference access to `Matrix` S4 dgCMatrix objects
+* The `RcppML::RNG` class:  A two-dimensional linear congruential random number generator using xorshift/xoroshiro128+ for populating transpose-identical dense and sparse matrices all at once or on the fly
+* The `RcppML::Cluster` class: fast recursive bipartitioning by rank-2 NMF
