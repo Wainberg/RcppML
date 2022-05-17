@@ -53,6 +53,32 @@ I am in the process of writing vignettes for as many topics as possible, with ac
 ## References
 [bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF for single-cell experiments.
 
+### Code example
+
+Example using R:
+
+```
+library(RcppML)
+data(hibirds)                 # load a dataset of hawaii bird frequency
+                              #   in 10km^2 survey grids
+m <- NMF(hibirds$counts)
+m$L1(0.01)                    # L1 makes for a little more sparsity
+set.seed(123)                 # make random initialization reproducible
+m$fit(k = 2:20)               # fit models at all ranks between 2 and 20
+m$
+```
+
+Example using C++:
+
+```
+#include <RcppML.hpp>          // also includes Eigen
+Eigen::MatrixXd data = Eigen::MatrixXd::Random(1000, 1000);
+RcppML::nmf m(data);
+m.
+```
+
+
+
 #### R functions
 The `nmf` function runs matrix factorization by alternating least squares in the form `A = WDH`. The `project` function updates `w` or `h` given the other, while the `mse` function calculates mean squared error of the factor model.
 
