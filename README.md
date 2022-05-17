@@ -4,36 +4,56 @@
 [![](https://www.r-pkg.org/badges/version-last-release/RcppML)](https://cran.r-project.org/package=RcppML)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
-`RcppML` is an R package for fast **non-negative matrix factorization** and **divisive clustering** using **large sparse matrices**. 
-
-RcppML NMF is:
- * The **fastest** NMF implementation in any language for sparse and dense matrices
- * More **interpretable** than other implementations due to diagonal scaling
- * Easy to **regularize** with an L1 penalty
+`RcppML` is a C++ library with R bindings for fast **non-negative matrix factorization** and other related methods. RcppML NMF is faster and more flexible than any other NMF implementation.
 
 ## Installation
 
-Install from [CRAN](https://cran.r-project.org/web/packages/RcppML/index.html) or the development version from GitHub:
+Install the R package from [CRAN](https://cran.r-project.org/web/packages/RcppML/index.html) or the development version from GitHub:
 
 ```
-install.packages('RcppML')                       # install CRAN version
-devtools::install_github("zdebruine/RcppML")     # compile dev version
+install.packages("RcppML")                       # CRAN version
+devtools::install_github("zdebruine/RcppML")     # dev version
 ```
 
-NOTE: RcppML is being actively developed. Please check that your `packageVersion("RcppML")` is current before raising issues.
+Once installed and loaded, RcppML C++ headers defining classes can be used in C++ files for any R package using `#include <RcppML.hpp>`.
 
-Check out the [CRAN manual](https://cran.r-project.org/web/packages/RcppML/RcppML.pdf).
+To use the C++ library, clone the repo and `#include <RcppML.hpp>`. You will also need to clone `RcppEigen`.
 
-Once installed and loaded, RcppML C++ headers defining classes can be used in C++ files for any R package using `#include <RcppML.hpp>`. 
+## Why NMF
+Non-negative Matrix Factorization is arguably the simplest possible dimensional reduction because it finds a number of factors that collectively add to approximate the original data. 
 
-## Matrix Factorization
-Sparse matrix factorization by alternating least squares:
-* Non-negativity constraints
-* L1 regularization
-* Diagonal scaling
-* Rank-1 and Rank-2 specializations (~2x faster than _irlba_ SVD equivalents)
+Non-negativity constraints force imputation of signal dropout (sparsity) and generate a model that is easy to reason about.
 
-Read (and cite) our [bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF for single-cell experiments.
+NMF is very flexible -- it can incorporate prior knowledge in the form of a graph describing feature or sample similarities, or a matrix giving weights for each data point, or a matrix of the same dimensions as `w` or `h` that couples factors to other information.
+
+NMF is useful for dimensional reduction, sparse signature recovery, prediction, transfer learning, integration, and more.
+
+Unlike PCA, NMF does not require data centering and scaling, and generally does best when considering all data, not just variable features.
+
+## Why not NMF
+* Too slow
+* Not very robust
+
+RcppML NMF fixes both problems.
+
+## What can it do
+* Automatic rank determination for variance-stabilized data
+* Fast cross-validation for rank determination
+* Masking for input data, `W`, and/or `H`
+* Regularize Convex L1 and L2-like (angular/pattern extraction) regularizations to increase sparsity and model stability.
+* Specializations for sparse and dense data
+* Specializations for symmetric data
+* Specialization for rank-2 NMF (faster than rank-2 SVD)
+* Can mask zeros (handle as missing)
+* Fully parallelized with OpenMP
+* Fast stopping criterion based on convergence of the model (cosine similarity of the model across consecutive iterations)
+* Diagonal scaling based on the L1 norm of `W` and `H`
+* Built-in new xorshift+xoroshiro RNG for transpose-identical matrix generation (useful in masking during cross-validation)
+
+I am in the process of writing vignettes for everything, with accompanying publications. Please read and cite accordingly.
+
+## References
+[bioRXiv manuscript](https://www.biorxiv.org/content/10.1101/2021.09.01.458620v1) on NMF for single-cell experiments.
 
 #### R functions
 The `nmf` function runs matrix factorization by alternating least squares in the form `A = WDH`. The `project` function updates `w` or `h` given the other, while the `mse` function calculates mean squared error of the factor model.
@@ -103,10 +123,3 @@ Rcpp::List DivisiveCluster(const Rcpp::S4& A_, int min_samples, double min_dist)
    return result;
 }
 ```
-
-### Planned Development
-
-* Correlation distance between vectorized `w` models across consecutive iterations is unstable, especially when factorizing homoskedastic datasets because `w_{i - 1}` does not always correspond exactly to `w_i`. Thus, `w_{i-1}` must be aligned to `w` using bipartite matching on a correlation distance matrix.  The cost of bipartite matching / the number of factors then gives the tolerance.
-* Thresholding NNLS in coordiante descent - set to zero if below some threshold.
-* Masking NA values automatically
-* New sparse matrix classes and implementation
