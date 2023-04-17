@@ -22,7 +22,7 @@ K-nearest Neighbors|`RcppML::knn`
 
 All methods are optimized for fast in-core computation on sparse CSC matrices (_i.e._ `Matrix::dgCMatrix`) or dense matrices through an Eigen C++ backend.
 
-**Hyperparameter Tuning:** Most functions support hyperparameter tuning through the `RcppML::tune` class. An object of this class can replace any hyperparameter in the function call and will automatically determine the value that maximizes generalizability based on Wold's Monte-Carlo cross-validation. Efficiency is ensured with a hybrid coordinate descent/Golden Section Search algorithm.
+**Hyperparameter Tuning:** Most functions support hyperparameter tuning through the `RcppML::tune` class, constructable through the `RcppML::pick()`, `RcppML::pick_from(__numeric__)`, `RcppML::pick_between(__begin__, __end__)`, `RcppML::pick_above(__begin__)`, and `RcppML::pick_below(__end__)` functions. An object of this class can replace any hyperparameter in the function call and will automatically determine the value that maximizes generalizability based on Wold's Monte-Carlo cross-validation. Efficient algorithms are used for tuning, including Golden Setion Search, coordinate descent, and stopping criteria that monitors model fitting performance compared to previously 
 
 **Interpretability:** Non-negativity constraints on hidden outputs are optional, and can be used to enforce interpretability of the model. For autoencoders, tied weights can lead to an NMF-like result.  L1 regularization is available for most methods, and increases the sparsity of the weights or hidden outputs.
 
