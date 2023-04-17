@@ -6,6 +6,11 @@
 
 Learn interpretable and generalizable models of big sparse data in R!
 
+|Function|RcppML Class|
+|---|---|
+Non-negative Matrix Factorization|RcppML::nmf
+
+
 * Non-negative Matrix Factorization (`RcppML::nmf`)
 * Autoencoding (`RcppML::autoencode`)
 * Neural Networks (`RcppML::neuralnet`)
