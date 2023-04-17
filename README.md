@@ -8,20 +8,17 @@ Learn interpretable and generalizable models of big sparse data in R!
 
 |Function|RcppML Class|
 |---|---|
-Non-negative Matrix Factorization|RcppML::nmf
-
-
-* Non-negative Matrix Factorization (`RcppML::nmf`)
-* Autoencoding (`RcppML::autoencode`)
-* Neural Networks (`RcppML::neuralnet`)
-* Singular Value Decomposition (`RcppML::svd`)
-* Principal Component Analysis (`RcppML::pca`)
-* Spectral Bipartitioning (`RcppML::bipartition`)
-* Divisive Clustering (`RcppML::dclust`)
-* Non-negative Least Squares (`RcppML::nnls`)
-* Least Squares (`RcppML::solve`)
-* K-means Clustering (`RcppML::kmeans`)
-* K-nearest Neighbors (`RcppML::knn`)
+Non-negative Matrix Factorization|`RcppML::nmf`
+Autoencoding|`RcppML::autoencode`
+Neural Networks|`RcppML::neuralnet`
+Singular Value Decomposition|`RcppML::svd`
+Principal Component Analysis|`RcppML::pca`
+Spectral Bipartitioning|`RcppML::bipartition`
+Divisive Clustering|`RcppML::dclust`
+Non-negative Least Squares|`RcppML::nnls`
+Least Squares|`RcppML::solve`
+K-means Clustering|`RcppML::kmeans`
+K-nearest Neighbors|`RcppML::knn`
 
 All methods are optimized for fast in-core modeling of sparse CSC matrices (_i.e._ `Matrix::dgCMatrix`) or dense matrices through an Eigen C++ backend.
 
