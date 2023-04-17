@@ -4,7 +4,31 @@
 [![](https://www.r-pkg.org/badges/version-last-release/RcppML)](https://cran.r-project.org/package=RcppML)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
-`RcppML` is a C++ library with R bindings for fast **non-negative matrix factorization** and other related methods. RcppML NMF is faster and more flexible than any other NMF implementation.
+Learn interpretable and generalizable models of big sparse data in R!
+
+* Non-negative Matrix Factorization (`RcppML::nmf`)
+* Autoencoding (`RcppML::autoencode`)
+* Neural Networks (`RcppML::neuralnet`)
+* Singular Value Decomposition (`RcppML::svd`)
+* Principal Component Analysis (`RcppML::pca`)
+* Spectral Bipartitioning (`RcppML::bipartition`)
+* Divisive Clustering (`RcppML::dclust`)
+* Non-negative Least Squares (`RcppML::nnls`)
+* Least Squares (`RcppML::solve`)
+* K-means Clustering (`RcppML::kmeans`)
+* K-nearest Neighbors (`RcppML::knn`)
+
+All methods are optimized for fast in-core modeling of sparse CSC matrices (_i.e._ `Matrix::dgCMatrix`) or dense matrices through an Eigen C++ backend.
+
+**Hyperparameter Tuning:** Most functions support hyperparameter tuning through the `RcppML::tune` class. An object of this class can replace any hyperparameter in the function call and will automatically determine the value that maximizes generalizability based on Wold's Monte-Carlo cross-validation. Efficiency is ensured with a hybrid coordinate descent/Golden Section Search algorithm.
+
+**Interpretability:** Non-negativity constraints on hidden outputs are optional, and can be used to enforce interpretability of the model. For autoencoders, tied weights can lead to an NMF-like result.  L1 regularization is available for most methods, and increases the sparsity of the weights or hidden outputs.
+
+**Domain-awareness:** Simple graph-convolution is available for most methods, which allows for knowledge in the form of a weighted graph to encourage more similar model weights between samples that are connected in the graph. Knowledge from any domain can be used, whether for integration, meta-modeling, or spatial analysis.
+
+**Masking**: Most methods support masking missing values, whether these are zeros (structural sparsity) or not (provide a separate masking matrix).
+
+**Optimization:** Most methods support the `RcppML::optimizer` class, which implements adam, among other optimizers, to accelerate convergence of algorithms with stochastic updates.
 
 ## Installation
 
