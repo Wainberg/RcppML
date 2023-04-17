@@ -22,15 +22,19 @@ K-nearest Neighbors|`RcppML::knn`
 
 All methods are optimized for fast in-core computation on sparse CSC matrices (_i.e._ `Matrix::dgCMatrix`) or dense matrices through an Eigen C++ backend.
 
-**Hyperparameter Tuning:** Most functions support hyperparameter tuning through the `RcppML::tune` class, constructable through the `RcppML::pick()`, `RcppML::pick_from(__numeric__)`, `RcppML::pick_between(__begin__, __end__)`, `RcppML::pick_above(__begin__)`, and `RcppML::pick_below(__end__)` functions. An object of this class can replace any hyperparameter in the function call and will automatically determine the value that maximizes generalizability based on Wold's Monte-Carlo cross-validation. Efficient algorithms are used for tuning, including Golden Setion Search, coordinate descent, and stopping criteria that monitors model fitting performance compared to previously 
+**Hyperparameter Tuning:** Most functions support automatic hyperparameter tuning through the `RcppML::tune` class. This class can replace any hyperparameter in the function call and will automatically determine the value that maximizes generalizability based on Wold's Monte-Carlo cross-validation. There are many optimizations built into this tune class, including automatic collapsing with other instances of the tune class in a function call to perform grid-searching, and early termination of unpromising model fits.
 
-**Interpretability:** Non-negativity constraints on hidden outputs are optional, and can be used to enforce interpretability of the model. For autoencoders, tied weights can lead to an NMF-like result.  L1 regularization is available for most methods, and increases the sparsity of the weights or hidden outputs.
+Notes to self: Tune constructor contains arguments for `lower`, `upper`, and `values`, `step`, and `min_step`.
+
+**Interpretability:** Non-negativity constraints on hidden outputs are optional, and can be used to increase interpretability of the model. For autoencoders, tied weights can lead to an NMF-like result.  L1 regularization is available for most methods, and increases the sparsity of the weights or hidden outputs, useful for feature engineering.
 
 **Domain-awareness:** Simple graph-convolution is available for most methods, which allows for knowledge in the form of a weighted graph to encourage more similar model weights between samples that are connected in the graph. Knowledge from any domain can be used, whether for integration, meta-modeling, or spatial analysis.
 
 **Masking**: Most methods support masking missing values, whether these are zeros (structural sparsity) or not (provide a separate masking matrix).
 
 **Optimization:** Most methods support the `RcppML::optimizer` class, which implements adam, among other optimizers, to accelerate convergence of algorithms with stochastic updates.
+
+**Minibatch:** Batch updates are an easy way to increase efficiency of parallelization, 
 
 ## RcppML::MatrixXd
 
