@@ -20,7 +20,7 @@ Least Squares|`RcppML::solve`
 K-means Clustering|`RcppML::kmeans`
 K-nearest Neighbors|`RcppML::knn`
 
-All methods are optimized for fast in-core modeling of sparse CSC matrices (_i.e._ `Matrix::dgCMatrix`) or dense matrices through an Eigen C++ backend.
+All methods are optimized for fast in-core computation on sparse CSC matrices (_i.e._ `Matrix::dgCMatrix`) or dense matrices through an Eigen C++ backend.
 
 **Hyperparameter Tuning:** Most functions support hyperparameter tuning through the `RcppML::tune` class. An object of this class can replace any hyperparameter in the function call and will automatically determine the value that maximizes generalizability based on Wold's Monte-Carlo cross-validation. Efficiency is ensured with a hybrid coordinate descent/Golden Section Search algorithm.
 
@@ -31,6 +31,12 @@ All methods are optimized for fast in-core modeling of sparse CSC matrices (_i.e
 **Masking**: Most methods support masking missing values, whether these are zeros (structural sparsity) or not (provide a separate masking matrix).
 
 **Optimization:** Most methods support the `RcppML::optimizer` class, which implements adam, among other optimizers, to accelerate convergence of algorithms with stochastic updates.
+
+## RcppML::MatrixXd
+
+RcppML uses a special data structure for storing matrices, the `RcppML::Matrix`. This 64-bit matrix reduces memory footprint and increases parallelization efficiency through several behind-the-scenes tricks:  1) storing floating point values with 7-digit precision, 2) dynamically deciding whether to store as sparse or dense, 3) if sparse, storing columns in a jagged array, storing unique values in each column only once, compressing index arrays to smallest byte possible and then bitpacking, and decompressing only one column at a time only when needed, 4) if dense, plugging directly into the Eigen API for fast BLAS.
+
+The R API is fairly minimal, but supports construction from `Matrix::dgCMatrix`, `cbind` with `dgCMatrix`, column-wise slicing, and fully-parallelized reading/writing from/to file.
 
 ## Installation
 
