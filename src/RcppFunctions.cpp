@@ -13,6 +13,7 @@
 #include "../inst/include/RcppML/cluster.hpp"
 #include "../inst/include/RcppML/distance.hpp"
 #include "../inst/include/RcppML/nmf.hpp"
+#include "../inst/include/RcppML/svd.hpp"
 // PROJECT LINEAR FACTOR MODELS
 
 //[[Rcpp::export]]
@@ -501,4 +502,48 @@ Rcpp::S4 c_rsparsematrix(const uint32_t nrow, const uint32_t ncol, const uint32_
     result.slot("i") = i_;
     result.slot("p") = p;
     return result;
+}
+
+//[[Rcpp::export]]
+Rcpp::List Rcpp_svd_dense(Eigen::MatrixXd& A_, const unsigned int k, const double tol, const int maxit, const int threads, const bool verbose) {
+  
+  RcppML::svd<Eigen::MatrixXd> m(A_, k);
+  
+  // set model parameters
+  m.tol = tol;
+  m.maxit = maxit;
+  m.threads = threads;
+  m.verbose = verbose;
+  
+  m.fit();
+  
+  return Rcpp::List::create(Rcpp::Named("u") = m.matrixU(),
+                            Rcpp::Named("d") = m.vectorD(),
+                            Rcpp::Named("v") = m.matrixV(),
+                            Rcpp::Named("tol") = m.fit_tol(),
+                            Rcpp::Named("iter") = m.fit_iter(),
+                            Rcpp::Named("mse") = m.fit_mse(),
+                            Rcpp::Named("best_model") = m.best_model());
+}
+
+//[[Rcpp::export]]
+Rcpp::List Rcpp_svd_sparse(const Rcpp::S4& A_, const unsigned int k, const double tol, const int maxit, const int threads, const bool verbose) {
+  Rcpp::SparseMatrix A(A_);
+  RcppML::svd<Rcpp::SparseMatrix> m(A, k);
+  
+  // set model parameters
+  m.tol = tol;
+  m.maxit = maxit;
+  m.threads = threads;
+  m.verbose = verbose;
+  
+  m.fit();
+  
+  return Rcpp::List::create(Rcpp::Named("u") = m.matrixU(),
+                            Rcpp::Named("d") = m.vectorD(),
+                            Rcpp::Named("v") = m.matrixV(),
+                            Rcpp::Named("tol") = m.fit_tol(),
+                            Rcpp::Named("iter") = m.fit_iter(),
+                            Rcpp::Named("mse") = m.fit_mse(),
+                            Rcpp::Named("best_model") = m.best_model());
 }
